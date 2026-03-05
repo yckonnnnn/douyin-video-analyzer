@@ -54,7 +54,8 @@ export class CollectionService {
         taskId,
         userId,
         "info",
-        "采集任务已启动"
+        "采集任务已启动",
+        { keywords: taskData.config?.keywords || [] }
       );
 
       // 获取搜索关键词
@@ -78,16 +79,19 @@ export class CollectionService {
             .where(eq(collectionTasks.id, taskId));
 
           // 记录进度日志
+          const logLevel = progress.status === "error" ? "error" : "info";
           await this.logCollection(
             taskId,
             userId,
-            "info",
-            `${progress.message} (${progress.current}/${progress.total})`
+            logLevel,
+            `${progress.message} (${progress.current}/${progress.total})`,
+            { status: progress.status, current: progress.current, total: progress.total }
           );
         },
       });
 
       // 保存采集到的视频
+      let savedCount = 0;
       for (const video of videos) {
         try {
           await db.insert(douyinVideos).values({
@@ -107,12 +111,19 @@ export class CollectionService {
             publishedAt: video.publishedAt,
             collectedAt: new Date(),
           });
+          savedCount++;
         } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : "Unknown error";
           console.warn(
-            `[CollectionService] Error saving video ${video.videoId}:`,
-            error
+            `[CollectionService] Error saving video ${video.videoId}: ${errorMsg}`
           );
-          // 继续保存其他视频
+          await this.logCollection(
+            taskId,
+            userId,
+            "warning",
+            `保存视频失败: ${video.title} - ${errorMsg}`,
+            { videoId: video.videoId }
+          );
         }
       }
 
@@ -122,7 +133,7 @@ export class CollectionService {
         .set({
           status: "completed",
           completedAt: new Date(),
-          collectedVideos: videos.length,
+          collectedVideos: savedCount,
           totalVideos: videos.length,
         })
         .where(eq(collectionTasks.id, taskId));
@@ -132,11 +143,13 @@ export class CollectionService {
         taskId,
         userId,
         "info",
-        `采集任务已完成，共采集 ${videos.length} 个视频`
+        `采集任务已完成，共采集 ${videos.length} 个视频，成功保存 ${savedCount} 个`,
+        { videosCollected: videos.length, videosSaved: savedCount }
       );
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
+      const errorStack = error instanceof Error ? error.stack : "";
 
       // 更新任务状态为失败
       const db = await getDb();
@@ -154,7 +167,12 @@ export class CollectionService {
           taskId,
           userId,
           "error",
-          `采集任务失败: ${errorMessage}`
+          `采集任务失败: ${errorMessage}`,
+          { 
+            errorMessage, 
+            errorType: error instanceof Error ? error.constructor.name : "Unknown",
+            errorStack: errorStack ? errorStack.substring(0, 500) : "" // 限制堆栈跟踪长度
+          }
         );
       }
 
@@ -173,9 +191,7 @@ export class CollectionService {
 
     await db
       .update(collectionTasks)
-      .set({
-        status: "paused",
-      })
+      .set({ status: "paused" })
       .where(
         and(
           eq(collectionTasks.id, taskId),
@@ -183,7 +199,12 @@ export class CollectionService {
         )
       );
 
-    await this.logCollection(taskId, userId, "info", "采集任务已暂停");
+    await this.logCollection(
+      taskId,
+      userId,
+      "info",
+      "采集任务已暂停"
+    );
   }
 
   /**
@@ -197,9 +218,7 @@ export class CollectionService {
 
     await db
       .update(collectionTasks)
-      .set({
-        status: "running",
-      })
+      .set({ status: "running" })
       .where(
         and(
           eq(collectionTasks.id, taskId),
@@ -207,7 +226,12 @@ export class CollectionService {
         )
       );
 
-    await this.logCollection(taskId, userId, "info", "采集任务已恢复");
+    await this.logCollection(
+      taskId,
+      userId,
+      "info",
+      "采集任务已恢复"
+    );
   }
 
   /**
@@ -217,7 +241,8 @@ export class CollectionService {
     taskId: number,
     userId: number,
     level: "info" | "warning" | "error",
-    message: string
+    message: string,
+    metadata?: Record<string, unknown>
   ): Promise<void> {
     const db = await getDb();
     if (!db) {
@@ -226,52 +251,71 @@ export class CollectionService {
     }
 
     try {
+      const timestamp = new Date().toISOString();
       await db.insert(collectionLogs).values({
         taskId,
         level,
         message,
-        metadata: { userId },
+        metadata: {
+          userId,
+          timestamp,
+          ...metadata,
+        },
       });
+
+      // 同时打印到控制台
+      console.log(`[${timestamp}] [${level.toUpperCase()}] Task ${taskId}: ${message}`);
     } catch (error) {
       console.error("[CollectionService] Error logging collection:", error);
     }
   }
 
   /**
-   * 获取采集日志
+   * 获取任务日志
    */
   static async getTaskLogs(
     taskId: number,
     userId: number,
     limit: number = 100
-  ): Promise<any[]> {
+  ): Promise<typeof collectionLogs.$inferSelect[]> {
     const db = await getDb();
     if (!db) {
+      console.warn("[CollectionService] Database not available");
       return [];
     }
 
-    const logs = await db
-      .select()
-      .from(collectionLogs)
-      .where(eq(collectionLogs.taskId, taskId))
-      .orderBy(collectionLogs.createdAt)
-      .limit(limit);
+    try {
+      const logs = await db
+        .select()
+        .from(collectionLogs)
+        .where(eq(collectionLogs.taskId, taskId))
+        .orderBy(collectionLogs.createdAt)
+        .limit(limit);
 
-    return logs.filter(
-      (log) => (log.metadata as any)?.userId === userId
-    );
+      return logs;
+    } catch (error) {
+      console.error("[CollectionService] Error fetching logs:", error);
+      return [];
+    }
   }
-}
 
-/**
- * 后台执行采集任务（使用 Promise，不阻塞 API 响应）
- */
-export async function executeCollectionTaskInBackground(
-  taskId: number,
-  userId: number
-): Promise<void> {
-  // 在后台执行，不等待完成
-  CollectionService.executeTask(taskId, userId).catch((error) => {
-    console.error("[CollectionService] Background task failed:", error);
-  });
+  /**
+   * 在后台执行采集任务（不阻塞 API 响应）
+   */
+  static executeCollectionTaskInBackground(
+    taskId: number,
+    userId: number
+  ): void {
+    // 使用 setImmediate 在事件循环的下一个迭代中执行
+    setImmediate(async () => {
+      try {
+        await this.executeTask(taskId, userId);
+      } catch (error) {
+        console.error(
+          `[CollectionService] Background task execution failed for task ${taskId}:`,
+          error
+        );
+      }
+    });
+  }
 }

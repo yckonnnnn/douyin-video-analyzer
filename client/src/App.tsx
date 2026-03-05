@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Categories from "./pages/Categories";
 import Tasks from "./pages/Tasks";
+import TaskLogs from "./pages/TaskLogs";
 import Videos from "./pages/Videos";
 import Analysis from "./pages/Analysis";
 import Export from "./pages/Export";
@@ -18,6 +19,7 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/categories"} component={Categories} />
       <Route path={"/tasks"} component={Tasks} />
+      <Route path={"/tasks/logs"} component={TaskLogs} />
       <Route path={"/videos"} component={Videos} />
       <Route path={"/analysis"} component={Analysis} />
       <Route path={"/export"} component={Export} />

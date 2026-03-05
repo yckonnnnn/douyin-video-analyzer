@@ -314,10 +314,10 @@ export default function Tasks() {
                         暂停
                       </Button>
                     )}
-                    <Link href={`/tasks/${task.id}`}>
+                    <Link href={`/tasks/logs?taskId=${task.id}`}>
                       <Button size="sm" variant="ghost">
                         <Eye className="w-4 h-4 mr-1" />
-                        查看详情
+                        查看日志
                       </Button>
                     </Link>
                   </div>

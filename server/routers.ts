@@ -6,7 +6,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
 import * as db from "./db";
 import { invokeLLM } from "./_core/llm";
-import { CollectionService, executeCollectionTaskInBackground } from "./services/collectionService";
+import { CollectionService } from "./services/collectionService";
 
 // ============ Validation Schemas ============
 
