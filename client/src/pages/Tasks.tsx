@@ -315,12 +315,10 @@ export default function Tasks() {
                       </Button>
                     )}
                     <Link href={`/tasks/${task.id}`}>
-                      <a>
-                        <Button size="sm" variant="ghost">
-                          <Eye className="w-4 h-4 mr-1" />
-                          查看详情
-                        </Button>
-                      </a>
+                      <Button size="sm" variant="ghost">
+                        <Eye className="w-4 h-4 mr-1" />
+                        查看详情
+                      </Button>
                     </Link>
                   </div>
                 </div>
