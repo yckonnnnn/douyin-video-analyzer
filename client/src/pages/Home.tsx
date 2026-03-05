@@ -103,7 +103,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {stats.map((stat) => (
             <Link key={stat.href} href={stat.href}>
-              <a className="rounded-lg border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-accent/50 cursor-pointer group">
+              <div className="rounded-lg border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-accent/50 cursor-pointer group">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground mb-2">
@@ -121,7 +121,7 @@ export default function Home() {
                   <span className="text-sm font-medium">查看详情</span>
                   <ArrowRight className="w-4 h-4" />
                 </div>
-              </a>
+              </div>
             </Link>
           ))}
         </div>
@@ -137,7 +137,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Link href="/categories">
-              <a className="group p-4 border border-border rounded-lg hover:border-accent/50 hover:bg-muted transition-all cursor-pointer">
+              <div className="group p-4 border border-border rounded-lg hover:border-accent/50 hover:bg-muted transition-all cursor-pointer">
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-medium text-foreground mb-1">
@@ -149,11 +149,11 @@ export default function Home() {
                   </div>
                   <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-accent transition-colors" />
                 </div>
-              </a>
+              </div>
             </Link>
 
             <Link href="/tasks">
-              <a className="group p-4 border border-border rounded-lg hover:border-accent/50 hover:bg-muted transition-all cursor-pointer">
+              <div className="group p-4 border border-border rounded-lg hover:border-accent/50 hover:bg-muted transition-all cursor-pointer">
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-medium text-foreground mb-1">
@@ -165,11 +165,11 @@ export default function Home() {
                   </div>
                   <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-accent transition-colors" />
                 </div>
-              </a>
+              </div>
             </Link>
 
             <Link href="/videos">
-              <a className="group p-4 border border-border rounded-lg hover:border-accent/50 hover:bg-muted transition-all cursor-pointer">
+              <div className="group p-4 border border-border rounded-lg hover:border-accent/50 hover:bg-muted transition-all cursor-pointer">
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-medium text-foreground mb-1">
@@ -181,11 +181,11 @@ export default function Home() {
                   </div>
                   <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-accent transition-colors" />
                 </div>
-              </a>
+              </div>
             </Link>
 
             <Link href="/analysis">
-              <a className="group p-4 border border-border rounded-lg hover:border-accent/50 hover:bg-muted transition-all cursor-pointer">
+              <div className="group p-4 border border-border rounded-lg hover:border-accent/50 hover:bg-muted transition-all cursor-pointer">
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-medium text-foreground mb-1">
@@ -197,7 +197,7 @@ export default function Home() {
                   </div>
                   <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-accent transition-colors" />
                 </div>
-              </a>
+              </div>
             </Link>
           </div>
         </div>
@@ -214,7 +214,7 @@ export default function Home() {
             <div className="space-y-3">
               {tasksQuery.data.slice(0, 5).map((task) => (
                 <Link key={task.id} href={`/tasks/${task.id}`}>
-                  <a className="group flex items-center justify-between p-4 border border-border rounded-lg hover:border-accent/50 hover:bg-muted transition-all cursor-pointer">
+                  <div className="group flex items-center justify-between p-4 border border-border rounded-lg hover:border-accent/50 hover:bg-muted transition-all cursor-pointer">
                     <div className="flex-1">
                       <h3 className="font-medium text-foreground">
                         {task.name}
@@ -245,7 +245,7 @@ export default function Home() {
                       </span>
                       <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-accent transition-colors" />
                     </div>
-                  </a>
+                  </div>
                 </Link>
               ))}
             </div>
