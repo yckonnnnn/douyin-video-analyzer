@@ -21,15 +21,21 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
+import { BarChart3, Database, FileText, Layers, Zap } from 'lucide-react';
+
 const menuItems = [
-  { icon: LayoutDashboard, label: "Page 1", path: "/" },
-  { icon: Users, label: "Page 2", path: "/some-path" },
+  { icon: LayoutDashboard, label: "仪表板", path: "/" },
+  { icon: Layers, label: "行业分类", path: "/categories" },
+  { icon: Zap, label: "采集任务", path: "/tasks" },
+  { icon: Database, label: "视频数据", path: "/videos" },
+  { icon: BarChart3, label: "分析结果", path: "/analysis" },
+  { icon: FileText, label: "数据导出", path: "/export" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -37,11 +43,15 @@ const DEFAULT_WIDTH = 280;
 const MIN_WIDTH = 200;
 const MAX_WIDTH = 480;
 
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+  title?: string;
+}
+
 export default function DashboardLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+  title = "仪表板",
+}: DashboardLayoutProps) {
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
@@ -90,7 +100,7 @@ export default function DashboardLayout({
         } as CSSProperties
       }
     >
-      <DashboardLayoutContent setSidebarWidth={setSidebarWidth}>
+      <DashboardLayoutContent setSidebarWidth={setSidebarWidth} title={title}>
         {children}
       </DashboardLayoutContent>
     </SidebarProvider>
@@ -100,11 +110,13 @@ export default function DashboardLayout({
 type DashboardLayoutContentProps = {
   children: React.ReactNode;
   setSidebarWidth: (width: number) => void;
+  title?: string;
 };
 
 function DashboardLayoutContent({
   children,
   setSidebarWidth,
+  title,
 }: DashboardLayoutContentProps) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
@@ -257,7 +269,14 @@ function DashboardLayoutContent({
             </div>
           </div>
         )}
-        <main className="flex-1 p-4">{children}</main>
+        <main className="flex-1 p-4">
+          {title && (
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold text-foreground">{title}</h1>
+            </div>
+          )}
+          {children}
+        </main>
       </SidebarInset>
     </>
   );
