@@ -85,7 +85,7 @@ React Dashboard ──► 检索 / 分析 / Excel·CSV 导出
 ## 🚀 快速开始
 
 ```bash
-# 1. 安装依赖（需要 Node.js 18+ 与 MySQL 8）
+# 1. 安装依赖（需要 Node.js 20.19+ 或 22.12+，与 MySQL 8）
 pnpm install
 
 # 2. 准备环境变量
